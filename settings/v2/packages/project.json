@@ -1,0 +1,14 @@
+{
+  "__version__": "1.0.6",
+  "general": {
+    "designResolution": {
+      "fitWidth": false,
+      "width": 1920,
+      "height": 1920
+    }
+  },
+  "custom_joint_texture_layouts": [],
+  "physics": {
+    "defaultMaterial": ""
+  }
+}

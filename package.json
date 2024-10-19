@@ -1,0 +1,15 @@
+{
+  "name": "Blast_Clone",
+  "uuid": "ef427462-2e2c-4e58-bed5-ba33e9711bbb",
+  "creator": {
+    "version": "3.8.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.8",
+    "@babel/preset-env": "^7.25.8",
+    "gulp": "^5.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-terser": "^2.1.0",
+    "gulp-tinify": "^1.0.2"
+  }
+}
