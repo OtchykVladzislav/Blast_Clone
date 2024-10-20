@@ -42,6 +42,8 @@ export class Tile extends Node {
         sprite.spriteFrame = this.sprite;
 
         this.calcuclatePosition(sprite)
+
+        this.name = `tile_${this.row}_${this.col}`
     }
 
     calcuclatePosition(sprite: Sprite): void{

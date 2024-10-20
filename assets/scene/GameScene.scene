@@ -184,7 +184,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 706.6521264994548,
+    "_orthoHeight": 705.6052344601962,
     "_near": 0,
     "_far": 1000,
     "_color": {
@@ -1935,7 +1935,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "combination": 5,
+    "combination": 2,
     "tiles": [
       {
         "__uuid__": "2753bc70-90df-44ab-a470-e513b7c2b43e@f9941",
