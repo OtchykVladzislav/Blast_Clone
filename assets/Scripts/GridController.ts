@@ -1,6 +1,7 @@
-import { _decorator, CCBoolean, CCInteger, Component, EventTouch, math, Node, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Component, EventTouch, find, math, Node, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
 import { Tile } from './Tile';
 import { GridGenerator } from './GridGenerator';
+import { GameController } from './GameController';
 const { ccclass, property } = _decorator;
 
 @ccclass('GridController')
@@ -16,7 +17,11 @@ export class GridController extends Component {
 
     gridGenerator: GridGenerator;
 
+    gameController: GameController;
+
     start() {
+        this.gameController = find('Canvas/GameController').getComponent(GameController)
+
         this.gridGenerator = new GridGenerator({
             row: this.row,
             col: this.col,
@@ -28,25 +33,26 @@ export class GridController extends Component {
             for(let j = 0; j < this.col; j++){
                 let elem = this.gridGenerator.grid[i][j]
 
-                const tile = new Tile({
-                    position: new Vec3(),
-                    index: elem,
-                    col: j,
-                    max_col: this.col,
-                    row: i,
-                    max_row: this.row,
-                    sprite: this.tiles[elem - 1]
-                })
-
-                tile.on(Node.EventType.TOUCH_END, this.onTileClick, this);
-
-                this.node.addChild(tile)
+                this.createTile(elem, i, j)
             }
         }
     }
+    createTile(elem: number, i: number, j: number){
+        const tile = new Tile({
+            position: new Vec3(),
+            index: elem,
+            col: j,
+            max_col: this.col,
+            row: i,
+            max_row: this.row,
+            sprite: this.tiles[elem - 1]
+        })
 
-    update(deltaTime: number) {
-        
+        tile.on(Node.EventType.TOUCH_END, this.onTileClick, this);
+
+        this.node.addChild(tile)
+
+        return tile
     }
 
     getRandomIntInclusive(min: number, max: number) {
@@ -64,6 +70,7 @@ export class GridController extends Component {
 
         if (group.length >= this.combination) {
             this.removeGroup(group);
+            this.gameController.move(group.length)
         } else {
             tween(targetNode)
             .to(0.05, {position: new Vec3(start_pos.x, start_pos.y, start_pos.z)})
@@ -72,10 +79,9 @@ export class GridController extends Component {
             .to(0.05, {position: new Vec3(start_pos.x, start_pos.y, start_pos.z)})
             .repeat(5)
             .start()
+            this.gameController.move(0)
         }
 
-        // Удаляем спрайт (или скрываем его)
-        //targetNode.destroy();
     }
 
     // Удаление группы символов
@@ -85,9 +91,7 @@ export class GridController extends Component {
             this.gridGenerator.grid[row][col] = 0; // Обнуляем ячейки (или можем поставить null/пустое значение)
             
             // Удаляем спрайт визуально
-            const spriteNode = this.node.getChildByName(`tile_${row}_${col}`);
-
-            console.log(spriteNode)
+            const spriteNode = this.findTile(row, col)
 
             if (spriteNode) {
                 spriteNode.destroy(); // Удаление спрайта
@@ -95,7 +99,61 @@ export class GridController extends Component {
         }
 
         // Обновляем поле (например, элементы падают вниз)
-        //this.updateGrid();
+        this.animateGridUpdate();
+    }
+
+    // Анимация падения элементов и обновления сетки
+    animateGridUpdate() {
+        for (let col = 0; col < this.col; col++) {
+            let emptyRow = 0;
+
+            for (let row = 0; row < this.row; row++) {
+                if (this.gridGenerator.grid[row][col] !== 0) {
+                    // Если выше есть пустая ячейка
+                    if (emptyRow !== row) {
+                        const spriteNode = this.findTile(row, col) as Tile;
+                        if (spriteNode) {
+                            const targetPosition = new Vec3(spriteNode.position.x, (emptyRow * (spriteNode.size.visualHeight - 10)) + spriteNode.size.visualHeight / 2, 0);
+
+                            spriteNode.row = emptyRow
+
+                            // Анимация перемещения вниз
+                            tween(spriteNode)
+                                .to(0.2, { position: targetPosition })
+                                .start();
+
+                            // Обновляем данные в сетке
+                            this.gridGenerator.grid[emptyRow][col] = this.gridGenerator.grid[row][col];
+                            this.gridGenerator.grid[row][col] = 0;
+                        }
+                    }
+                    emptyRow++;
+                }
+            }
+
+            // Заполняем верхние пустые ячейки новыми символами с анимацией появления
+            for (let row = emptyRow; row < this.row; row++) {
+                const newSymbol = this.gridGenerator.getRandomSymbol();
+                this.gridGenerator.grid[row][col] = newSymbol;
+
+                const tile = this.createTile(newSymbol, row, col)
+
+                const tile_pos = tile.position.clone()
+
+                tile.setPosition(tile_pos.x, (tile_pos.y + tile.size.visualHeight) + tile.size.visualHeight / 2, 0); // Позиция выше на одну клетку
+
+                tween(tile)
+                    .to(0.2, { position: tile_pos }) // Анимация падения сверху
+                    .start();
+            }
+        }
+    }
+
+    findTile(row: number, col: number){
+        return this.node.children.find(e => {
+            const tile = e as Tile
+            return tile.row === row && tile.col === col
+        })
     }
 
 }

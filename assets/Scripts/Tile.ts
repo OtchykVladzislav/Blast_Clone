@@ -14,6 +14,8 @@ export class Tile extends Node {
 
     row: number;
 
+    size: any;
+
     sprite: SpriteFrame;
 
     constructor({position, index, col, max_col, row, max_row, sprite}) {
@@ -42,8 +44,6 @@ export class Tile extends Node {
         sprite.spriteFrame = this.sprite;
 
         this.calcuclatePosition(sprite)
-
-        this.name = `tile_${this.row}_${this.col}`
     }
 
     calcuclatePosition(sprite: Sprite): void{
@@ -59,6 +59,8 @@ export class Tile extends Node {
         position.y += size.visualHeight / 2
 
         this.position.set(position)
+
+        this.size = size
     }
 
     calculateSize(sprite: Sprite) {

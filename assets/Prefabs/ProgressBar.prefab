@@ -304,7 +304,7 @@
     "fileId": "e516djmaZAMryDnUHP8S9F"
   },
   {
-    "__type__": "3cf20n4fElOToxY9EqE7fYy",
+    "__type__": "982e1ZfpShCjK3/Cm9I4T2H",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -322,7 +322,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "b3LwLWDfVGq6pUGvMtWCsF"
+    "fileId": "b6o5FzH2lLaaJ1oHGofvhP"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -333,6 +333,7 @@
       "__id__": 0
     },
     "fileId": "00WB2hZR9KTIc6DuWvuwl6",
+    "instance": null,
     "targetOverrides": null
   }
 ]

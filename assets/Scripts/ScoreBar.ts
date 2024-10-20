@@ -1,11 +1,8 @@
-import { _decorator, Component, Node, UITransform, Label, EventTarget } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, EventTarget, tween, ProgressBar } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('ProgressBar')
-export class ProgressBar extends Component {
-
-    @property(Node)
-    barFill: Node = null;
+@ccclass('ScoreBar')
+export class ScoreBar extends Component {
 
     eventTarget = new EventTarget();
 
@@ -13,16 +10,18 @@ export class ProgressBar extends Component {
     private current: number = 0; 
 
     
-    updateBar(health: number) {
-        this.current = health;
+    updateBar(amount: number) {
+        this.current = amount;
         const percent = this.current / this.max;
 
-        
-        const healthBarWidth = this.barFill.getComponent(UITransform).contentSize.width;
-        this.barFill.getComponent(UITransform).width = healthBarWidth * percent;
+        const bar_progress = this.node.getComponent(ProgressBar);
 
+        tween(bar_progress).to(
+            0.2,
+            {progress: percent}
+        ).start();
 
-        if(this.current === 0) this.eventTarget.emit('dead');
+        if(this.current === this.max) this.eventTarget.emit('finish');
     }
 
     
