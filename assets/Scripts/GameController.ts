@@ -28,9 +28,7 @@ export class GameManager extends Component {
 
     updateMoveCount(): void{
         const move = find(this.UI_PATH + 'InfoContainer/move-count').getComponent(Label)
-
-        console.log(this.currentMove)
-
+        
         move.string = '' + this.currentMove
     }
 
