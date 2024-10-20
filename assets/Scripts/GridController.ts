@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Component, EventTouch, find, math, Node, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate, Node, ParticleSystem, ParticleSystem2D, Prefab, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
 import { Tile } from './Tile';
 import { GridGenerator } from './GridGenerator';
 import { GameController } from './GameController';
@@ -8,6 +8,9 @@ const { ccclass, property } = _decorator;
 export class GridController extends Component {
     @property (CCInteger)
     combination = 2;
+
+    @property(Prefab)
+    tileParticles = null
 
     private row: number = 9;
     private col: number = 9;
@@ -70,7 +73,7 @@ export class GridController extends Component {
 
         if (group.length >= this.combination) {
             this.removeGroup(group);
-            this.gameController.move(group.length)
+            this.gameController.move(group.length, targetNode)
         } else {
             tween(targetNode)
             .to(0.05, {position: new Vec3(start_pos.x, start_pos.y, start_pos.z)})
@@ -92,6 +95,8 @@ export class GridController extends Component {
             
             // Удаляем спрайт визуально
             const spriteNode = this.findTile(row, col)
+
+            this.burnTileEffect(spriteNode)
 
             if (spriteNode) {
                 spriteNode.destroy(); // Удаление спрайта
@@ -154,6 +159,39 @@ export class GridController extends Component {
             const tile = e as Tile
             return tile.row === row && tile.col === col
         })
+    }
+
+    burnTileEffect(tile: Node){
+        const effect = instantiate(this.tileParticles)
+
+        const effectSystem = effect.getComponent(ParticleSystem2D);
+
+        effectSystem.startColor = this.changeColor((tile as Tile).index, true);
+        effectSystem.endColor = this.changeColor((tile as Tile).index, false);
+
+        //effectSystem.resetSystem();
+
+        const cont = find('Canvas/EffectContainer')
+
+        effect.position.set(tile.position.clone().add(tile.parent.position))
+
+        cont.addChild(effect)
+
+        setTimeout(() => effect.destroy(), 300)
+    }
+
+    changeColor(index: number, start: boolean){
+        const alpha = (start ? 255 : 0)
+
+        const colors = [
+            new Color(0, 85, 164, alpha),
+            new Color(0, 135, 33, alpha),
+            new Color(201, 52, 157, alpha),
+            new Color(164, 7, 20, alpha),
+            new Color(243, 151, 0, alpha)
+        ]
+
+        return colors[index - 1]
     }
 
 }

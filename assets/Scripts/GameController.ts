@@ -1,9 +1,13 @@
-import { _decorator, CCInteger, Component, find, Label, Node } from 'cc';
+import { _decorator, CCInteger, Component, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
 import { ScoreBar } from './ScoreBar';
+import { Tile } from './Tile';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameController')
 export class GameController extends Component {
+    @property (Prefab)
+    scorePrefab = null;
+
     @property (CCInteger)
     moves = 40;
 
@@ -29,12 +33,43 @@ export class GameController extends Component {
 
     }
 
-    move(amount: number){
+    move(amount: number, tile: Tile = null){
         if(amount){
+            this.animScore(amount, tile)
+
             this.updateScoreCount(this.priceTile * amount)
         }
 
         this.updateMoveCount(1)
+    }
+
+    animScore(amount: number, tile: Tile){
+        const score = instantiate(this.scorePrefab)
+
+        const position = new Vec3()
+
+        position.add(tile.position).add(tile.parent.position)
+
+        const cont = find('Canvas/EffectContainer')
+
+        score.getComponent(Label).string = '+' + (this.priceTile * amount)
+
+        score.position.set(position)
+
+        cont.addChild(score)
+
+        const start_pos = score.position.clone()
+
+        tween(score)
+        .to(0.35, {position: new Vec3(start_pos.x, start_pos.y + 100, start_pos.z)}, {onComplete: () => {
+            if(score) score.destroy()
+        }})
+        .start()
+
+        tween(score.getComponent(UIOpacity))
+        .to(0.3, {opacity: 0})
+        .start()
+
     }
 
     updateMoveCount(amount: number): void{
