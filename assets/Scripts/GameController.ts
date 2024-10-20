@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Component, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
+import { _decorator, CCInteger, Component, director, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
 import { ScoreBar } from './ScoreBar';
 import { Tile } from './Tile';
 const { ccclass, property } = _decorator;
@@ -17,20 +17,25 @@ export class GameController extends Component {
     @property(CCInteger)
     priceTile = 10;
 
+    state: string = 'gameplay'
+
     currentScore: number = 0;
-    currentMove: number = this.moves
+    currentMove: number = 0;
 
     private UI_PATH = 'Canvas/UI/'
 
     private progress: ScoreBar;
 
     start() {
+        this.currentMove = this.moves
+
         this.updateMoveCount(0)
 
         this.progress = find(this.UI_PATH + 'ProgressContainer/progress-bar').getComponent(ScoreBar)
 
         this.progress.max = this.score
 
+        this.progress.eventTarget.on('finish', () => this.onGameEnd(true), this)
     }
 
     move(amount: number, tile: Tile = null){
@@ -78,6 +83,8 @@ export class GameController extends Component {
         this.currentMove -= amount
         
         move.string = '' + this.currentMove
+
+        if(!this.currentMove) this.onGameEnd(false)
     }
 
     updateScoreCount(amount: number): void{
@@ -89,6 +96,19 @@ export class GameController extends Component {
 
         score.string = '' + this.currentScore
 
+    }
+
+    onGameEnd(reason: boolean) : void {
+        if(this.state === 'cta') return;
+
+        this.state = 'cta'
+
+        globalThis.gameResultData = { 
+            score: this.currentScore,
+            title: (reason ? 'ПОБЕДА!!' : 'ПРОИГРАЛ;(')
+        };
+
+        setTimeout(() => director.loadScene("ResultScene"), 500)
     }
 }
 
