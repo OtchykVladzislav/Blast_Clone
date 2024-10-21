@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Component, director, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
+import { _decorator, CCInteger, Component, director, EventTouch, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
 import { ScoreBar } from './ScoreBar';
 import { Tile } from './Tile';
 const { ccclass, property } = _decorator;
@@ -17,7 +17,12 @@ export class GameController extends Component {
     @property(CCInteger)
     priceTile = 10;
 
-    state: string = 'gameplay'
+    @property (CCInteger)
+    bonusBombRadius = 1;
+
+    state: string = 'gameplay';
+
+    isBonused: Node = null;
 
     currentScore: number = 0;
     currentMove: number = 0;
@@ -109,6 +114,26 @@ export class GameController extends Component {
         };
 
         setTimeout(() => director.loadScene("ResultScene"), 500)
+    }
+
+    clickBonus(event: EventTouch){
+        if(this.isBonused) return;
+
+        this.isBonused = event.currentTarget
+
+        event.currentTarget.parent.children.map((e: Node, i: number) => {
+            if(i) e.children[3].active = true
+        })
+    }
+
+    enableBonus(node: Node){
+        if(!this.isBonused) return;
+
+        this.isBonused = null
+
+        node.parent.children.map((e: Node, i: number) => {
+            if(i) e.children[3].active = false
+        })
     }
 }
 

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, TweenAction, Vec2, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('Tile')
@@ -10,11 +10,15 @@ export class Tile extends Node {
 
     max_col: number;
 
+    animation: any;
+
     col: number;
 
     row: number;
 
-    size: any;
+    defaultPos: Vec3;
+
+    size: { visualWidth: number; visualHeight: number };
 
     sprite: SpriteFrame;
 
@@ -59,6 +63,8 @@ export class Tile extends Node {
         position.y += size.visualHeight / 2
 
         this.position.set(position)
+
+        this.defaultPos = position.clone()
 
         this.size = size
     }

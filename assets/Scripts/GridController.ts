@@ -2,6 +2,7 @@ import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate,
 import { Tile } from './Tile';
 import { GridGenerator } from './GridGenerator';
 import { GameController } from './GameController';
+import { Bomb } from './TypeBonus/Bomb';
 const { ccclass, property } = _decorator;
 
 @ccclass('GridController')
@@ -12,11 +13,14 @@ export class GridController extends Component {
     @property(Prefab)
     tileParticles = null
 
-    private row: number = 9;
-    private col: number = 9;
-
+    @property(Prefab)
+    explosionParticles = null
+    
     @property([SpriteFrame])
     tiles: SpriteFrame[] = []
+
+    private row: number = 9;
+    private col: number = 9;
 
     gridGenerator: GridGenerator;
 
@@ -58,16 +62,28 @@ export class GridController extends Component {
         return tile
     }
 
-    getRandomIntInclusive(min: number, max: number) {
-        const minCeiled = Math.ceil(min);
-        const maxFloored = Math.floor(max);
-        return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
-    }
-
     onTileClick(event: EventTouch){
         const targetNode = event.target as Tile;
 
+        if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'bomb'){
+            const bomb = new Bomb(this.gridGenerator.grid, this.row, this.col)
+            const group = bomb.destroyTilesInRadius(targetNode.row, targetNode.col, this.gameController.bonusBombRadius)
+            bomb.effectBombExplosion(targetNode, this.gameController.bonusBombRadius, this.explosionParticles)
+            this.gameController.enableBonus(this.gameController.isBonused)
+            this.removeGroup(group);
+            this.gameController.move(group.length, targetNode)
+        } else if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'swap'){
+            
+        } else this.defaultClick(targetNode)
+    }
+
+    defaultClick(targetNode: Tile){
         const group = this.gridGenerator.findMatchingGroup(targetNode.row, targetNode.col, targetNode.index);
+        
+        if(targetNode.animation){
+            targetNode.animation.stop()
+            targetNode.position.set(targetNode.defaultPos)
+        }
 
         const start_pos = targetNode.position.clone()
 
@@ -75,16 +91,16 @@ export class GridController extends Component {
             this.removeGroup(group);
             this.gameController.move(group.length, targetNode)
         } else {
-            tween(targetNode)
+            targetNode.animation = tween(targetNode)
             .to(0.05, {position: new Vec3(start_pos.x, start_pos.y, start_pos.z)})
             .to(0.05, {position: new Vec3(start_pos.x - 5, start_pos.y + 5, start_pos.z)})
             .to(0.05, {position: new Vec3(start_pos.x + 5, start_pos.y - 5, start_pos.z)})
             .to(0.05, {position: new Vec3(start_pos.x, start_pos.y, start_pos.z)})
             .repeat(5)
             .start()
+
             this.gameController.move(0)
         }
-
     }
 
     // Удаление группы символов
@@ -118,6 +134,11 @@ export class GridController extends Component {
                     if (emptyRow !== row) {
                         const spriteNode = this.findTile(row, col) as Tile;
                         if (spriteNode) {
+                            if(spriteNode.animation){
+                                spriteNode.animation.stop()
+                                spriteNode.position.set(spriteNode.defaultPos)
+                            }
+
                             const targetPosition = new Vec3(spriteNode.position.x, (emptyRow * (spriteNode.size.visualHeight - 10)) + spriteNode.size.visualHeight / 2, 0);
 
                             spriteNode.row = emptyRow
@@ -168,8 +189,6 @@ export class GridController extends Component {
 
         effectSystem.startColor = this.changeColor((tile as Tile).index, true);
         effectSystem.endColor = this.changeColor((tile as Tile).index, false);
-
-        //effectSystem.resetSystem();
 
         const cont = find('Canvas/EffectContainer')
 
