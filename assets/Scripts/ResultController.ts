@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, find, Label, Node } from 'cc';
+import { _decorator, Color, Component, find, Label, Node, tween } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('ResultController')
@@ -7,6 +7,7 @@ export class ResultController extends Component {
         const resultData = globalThis.gameResultData;
         if (resultData) {
             const { score, title } = resultData;
+            const value = {score: 0}
 
             // Устанавливаем заголовок и счёт
             const titleLabel = find('Canvas/UI/title').getComponent(Label);
@@ -16,7 +17,14 @@ export class ResultController extends Component {
             titleLabel.string = title;
 
             const scoreLabel = find('Canvas/UI/score').getComponent(Label);
-            scoreLabel.string = `ТВОИ ОЧКИ: ${score}`;
+
+            tween(value)
+            .to(0.3, {score: score}, {
+                onUpdate(target: any) {
+                    scoreLabel.string = `ТВОИ ОЧКИ: ${target.score.toFixed(0)}`;
+                }
+            }).start()
+            
         }
     }
 }

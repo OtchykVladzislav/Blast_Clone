@@ -17,6 +17,9 @@ export class GameController extends Component {
     @property(CCInteger)
     priceTile = 10;
 
+    @property(CCInteger)
+    currentCoin = 9999999;
+
     @property (CCInteger)
     bonusBombRadius = 1;
 
@@ -35,6 +38,8 @@ export class GameController extends Component {
         this.currentMove = this.moves
 
         this.updateMoveCount(0)
+
+        this.updateCoinCount(0)
 
         this.progress = find(this.UI_PATH + 'ProgressContainer/progress-bar').getComponent(ScoreBar)
 
@@ -82,6 +87,20 @@ export class GameController extends Component {
 
     }
 
+    updateCoinCount(amount: number): void{
+        if(!this.currentCoin) return;
+        const value = {coin: this.currentCoin}
+
+        const coin = find(this.UI_PATH + 'DonateContainer/coin-count').getComponent(Label)
+
+        tween(value)
+        .to(0.3, {coin: this.currentCoin - amount}, {
+            onUpdate(target: any) {
+                coin.string = '' + target.coin.toFixed(0)
+            }
+        }).start()
+    }
+
     updateMoveCount(amount: number): void{
         const move = find(this.UI_PATH + 'InfoContainer/move-count').getComponent(Label)
 
@@ -93,14 +112,19 @@ export class GameController extends Component {
     }
 
     updateScoreCount(amount: number): void{
+        const value = {score: this.currentScore}
         const score = find(this.UI_PATH + 'InfoContainer/score-count').getComponent(Label)
 
         this.currentScore += amount
 
         this.progress.increase(amount)
 
-        score.string = '' + this.currentScore
-
+        tween(value)
+        .to(0.3, {score: this.currentScore}, {
+            onUpdate(target: any) {
+                score.string = '' + target.score.toFixed(0)
+            }
+        }).start()
     }
 
     onGameEnd(reason: boolean) : void {
@@ -116,13 +140,19 @@ export class GameController extends Component {
         setTimeout(() => director.loadScene("ResultScene"), 500)
     }
 
+    onDonateScreen() : void {
+        director.loadScene("DonateScene")
+    }
+
     clickBonus(event: EventTouch){
         if(this.isBonused) return;
 
         this.isBonused = event.currentTarget
 
+        this.updateCoinCount(+this.isBonused.getComponentInChildren(Label).string)
+
         event.currentTarget.parent.children.map((e: Node, i: number) => {
-            if(i) e.children[3].active = true
+            if(i) e.children[4].active = true
         })
     }
 
@@ -132,7 +162,7 @@ export class GameController extends Component {
         this.isBonused = null
 
         node.parent.children.map((e: Node, i: number) => {
-            if(i) e.children[3].active = false
+            if(i) e.children[4].active = false
         })
     }
 }

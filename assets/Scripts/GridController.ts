@@ -15,6 +15,9 @@ export class GridController extends Component {
 
     @property(Prefab)
     explosionParticles = null
+
+    @property(SpriteFrame)
+    borderTile: SpriteFrame = null;
     
     @property([SpriteFrame])
     tiles: SpriteFrame[] = []
@@ -73,7 +76,8 @@ export class GridController extends Component {
             this.removeGroup(group);
             this.gameController.move(group.length, targetNode)
         } else if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'swap'){
-            
+
+
         } else this.defaultClick(targetNode)
     }
 
