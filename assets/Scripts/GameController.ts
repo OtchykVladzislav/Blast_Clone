@@ -1,7 +1,15 @@
-import { _decorator, Camera, CCInteger, Component, director, EventTouch, find, instantiate, Label, Node, Prefab, screen, Size, tween, UIOpacity, UITransform, Vec3, Widget } from 'cc';
+import { _decorator, AudioSource, Camera, CCInteger, Component, director, Enum, EventTouch, find, instantiate, Label, Node, Prefab, screen, Size, tween, UIOpacity, UITransform, Vec3, Widget } from 'cc';
 import { ScoreBar } from './ScoreBar';
 import { Tile } from './Tile';
+import { SoundManager } from './SoundManager';
 const { ccclass, property } = _decorator;
+
+enum SuperTileMode {
+    Column = 0,
+    Row = 1,
+    Bomb = 2,
+    All = 3
+}
 
 @ccclass('GameController')
 export class GameController extends Component {
@@ -20,8 +28,21 @@ export class GameController extends Component {
     @property(CCInteger)
     currentCoin = 9999999;
 
+    @property(CCInteger)
+    superTileCombination = 2;
+
     @property (CCInteger)
     bonusBombRadius = 1;
+
+    @property({ type: Enum(SuperTileMode) })
+    superTileMode: SuperTileMode = SuperTileMode.Column;
+
+    @property ({
+        visible() {
+            return this.superTileMode === SuperTileMode.Bomb;  // Показываем только если выбран Hard
+        }
+    })
+    superTileBombRadius: number = 1;
 
     state: string = 'gameplay';
 
@@ -30,11 +51,25 @@ export class GameController extends Component {
     currentScore: number = 0;
     currentMove: number = 0;
 
+    soundManager: SoundManager;
+
     private UI_PATH = 'Canvas/UI/'
 
     private progress: ScoreBar;
 
     start() {
+        this.soundManager = find('Canvas/SoundManager').getComponent(SoundManager);
+
+        if(!globalThis.sound){
+            const soundSource = new AudioSource()
+            soundSource.clip = this.soundManager.soundBgSound;
+            soundSource.volume = 0.5;
+            soundSource.loop = true;
+            soundSource.play()
+
+            globalThis.sound = soundSource
+        }
+
         this.currentMove = this.moves
 
         this.updateMoveCount(0)

@@ -34,20 +34,21 @@ export class Teleport {
         target2.col = target_params_1.col
         target2.row = target_params_1.row
 
+        let index_1 = target1.getSiblingIndex();
+        let index_2 = target2.getSiblingIndex();
+
         tween(target1)
         .to(0.2, {scale: new Vec3(0, 0, 0)}, {onComplete: () => {
-            let index = target2.getSiblingIndex();
             target1.position.set(target_pos_2)
-            target1.setSiblingIndex(index);
+            target1.setSiblingIndex(index_2);
         }})
         .to(0.2, {scale: new Vec3(1, 1, 1)})
         .start()
 
         tween(target2)
         .to(0.2, {scale: new Vec3(0, 0, 0)}, {onComplete: () => {
-            let index = target1.getSiblingIndex();
             target2.position.set(target_pos_1)
-            target2.setSiblingIndex(index);
+            target2.setSiblingIndex(index_1);
         }})
         .to(0.2, {scale: new Vec3(1, 1, 1)})
         .start()

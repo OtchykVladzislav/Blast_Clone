@@ -81,6 +81,7 @@ export class GridController extends Component {
             bomb.effectBombExplosion(targetNode, this.gameController.bonusBombRadius, this.explosionParticles)
             this.gameController.enableBonus(this.gameController.isBonused)
             this.removeGroup(group);
+            this.gameController.soundManager.explosionSound.play()
             this.gameController.move(group.length, targetNode)
         } else if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'swap'){
             this.teleportTile(targetNode)
@@ -103,6 +104,7 @@ export class GridController extends Component {
         this.choiceTile.push({target: targetNode, border: node})
 
         if(this.choiceTile.length == 2) {
+            this.gameController.soundManager.teleportSound.play()
             new Teleport().bonusEvent(this.choiceTile, this.gridGenerator.grid)
             this.gameController.enableBonus(this.gameController.isBonused)
             this.choiceTile = []
@@ -118,6 +120,8 @@ export class GridController extends Component {
         }
 
         const start_pos = targetNode.position.clone()
+
+        this.gameController.soundManager.clickSound.play()
 
         if (group.length >= this.combination) {
             this.removeGroup(group);
