@@ -7,9 +7,12 @@
   "devDependencies": {
     "@babel/core": "^7.25.8",
     "@babel/preset-env": "^7.25.8",
+    "@types/jest": "^29.5.13",
     "gulp": "^5.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-terser": "^2.1.0",
-    "gulp-tinify": "^1.0.2"
+    "gulp-tinify": "^1.0.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5"
   }
 }
