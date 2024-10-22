@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Component, director, EventTouch, find, instantiate, Label, Node, Prefab, tween, UIOpacity, Vec3 } from 'cc';
+import { _decorator, Camera, CCInteger, Component, director, EventTouch, find, instantiate, Label, Node, Prefab, screen, Size, tween, UIOpacity, UITransform, Vec3, Widget } from 'cc';
 import { ScoreBar } from './ScoreBar';
 import { Tile } from './Tile';
 const { ccclass, property } = _decorator;
