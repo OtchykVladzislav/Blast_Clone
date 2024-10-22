@@ -1,8 +1,9 @@
-import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate, Node, ParticleSystem, ParticleSystem2D, Prefab, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate, Node, ParticleSystem, ParticleSystem2D, Prefab, Sprite, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
 import { Tile } from './Tile';
 import { GridGenerator } from './GridGenerator';
 import { GameController } from './GameController';
 import { Bomb } from './TypeBonus/Bomb';
+import { Teleport } from './TypeBonus/Teleport';
 const { ccclass, property } = _decorator;
 
 @ccclass('GridController')
@@ -25,12 +26,18 @@ export class GridController extends Component {
     private row: number = 9;
     private col: number = 9;
 
+    choiceTile: any[] = []
+
+    effectContainer: Node;
+
     gridGenerator: GridGenerator;
 
     gameController: GameController;
 
     start() {
         this.gameController = find('Canvas/GameController').getComponent(GameController)
+
+        this.effectContainer = find('Canvas/EffectContainer')
 
         this.gridGenerator = new GridGenerator({
             row: this.row,
@@ -76,10 +83,31 @@ export class GridController extends Component {
             this.removeGroup(group);
             this.gameController.move(group.length, targetNode)
         } else if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'swap'){
-
-
+            this.teleportTile(targetNode)
         } else this.defaultClick(targetNode)
     }
+
+    teleportTile(targetNode: Tile){
+        const parent = this.effectContainer
+
+        const node = new Node()
+
+        const sprite = node.addComponent(Sprite)
+
+        sprite.spriteFrame = this.borderTile;
+
+        parent.addChild(node)
+
+        node.position.set(targetNode.position.clone().add(targetNode.parent.position).add(new Vec3(0, -5, 0)))
+
+        this.choiceTile.push({target: targetNode, border: node})
+
+        if(this.choiceTile.length == 2) {
+            new Teleport().bonusEvent(this.choiceTile, this.gridGenerator.grid)
+            this.gameController.enableBonus(this.gameController.isBonused)
+            this.choiceTile = []
+        }
+    } 
 
     defaultClick(targetNode: Tile){
         const group = this.gridGenerator.findMatchingGroup(targetNode.row, targetNode.col, targetNode.index);
@@ -194,11 +222,11 @@ export class GridController extends Component {
         effectSystem.startColor = this.changeColor((tile as Tile).index, true);
         effectSystem.endColor = this.changeColor((tile as Tile).index, false);
 
-        const cont = find('Canvas/EffectContainer')
+        this.effectContainer = find('Canvas/EffectContainer')
 
         effect.position.set(tile.position.clone().add(tile.parent.position))
 
-        cont.addChild(effect)
+        this.effectContainer.addChild(effect)
 
         setTimeout(() => effect.destroy(), 300)
     }
