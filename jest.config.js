@@ -1,14 +1,6 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
-    moduleFileExtensions: ['ts', 'js', 'json'],
-    transform: {
-        '^.+\\.ts$': 'ts-jest'
-    },
-    testMatch: ['**/tests/**/*.test.(ts|js)'],  // Указываем путь к тестам
-    globals: {
-        'ts-jest': {
-            tsconfig: 'tsconfig.json',
-        }
-    }
+    modulePathIgnorePatterns: ['<rootDir>/assets/'],
+    testMatch: ['**/*.test.ts'],  // Это указывает Jest искать файлы с расширением .test.ts для тестов
 };
