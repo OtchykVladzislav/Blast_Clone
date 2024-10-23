@@ -48,25 +48,28 @@ export class GridGenerator {
 
     // Создаем одну случайную группу с совпадениями
     createRandomMatch() {
-        const matchLength = Math.floor(Math.random() * this.combination) + 4; // Случайное количество символов (от this.combination до 5)
-        const matchSymbol = this.getRandomSymbol();
-        
-        // Случайный выбор типа совпадения: горизонтальное или вертикальное
         const isHorizontal = Math.random() < 0.5;
 
+        // Определяем максимальную допустимую длину совпадения
+        const maxMatchLength = isHorizontal ? this.cols : this.rows;
+        
+        // Ограничиваем длину совпадения, чтобы она не превышала размер строки или столбца
+        const matchLength = Math.min(Math.floor(Math.random() * this.combination) + 4, maxMatchLength);
+        const matchSymbol = this.getRandomSymbol();
+        
         if (isHorizontal) {
             // Горизонтальное совпадение
             const row = Math.floor(Math.random() * this.rows);
-            const colStart = Math.floor(Math.random() * (this.cols - matchLength));
-
+            const colStart = Math.floor(Math.random() * (this.cols - matchLength + 1)); // Убедитесь, что colStart не выйдет за пределы
+        
             for (let col = colStart; col < colStart + matchLength; col++) {
                 this.grid[row][col] = matchSymbol;
             }
         } else {
             // Вертикальное совпадение
             const col = Math.floor(Math.random() * this.cols);
-            const rowStart = Math.floor(Math.random() * (this.rows - matchLength));
-
+            const rowStart = Math.floor(Math.random() * (this.rows - matchLength + 1)); // Убедитесь, что rowStart не выйдет за пределы
+        
             for (let row = rowStart; row < rowStart + matchLength; row++) {
                 this.grid[row][col] = matchSymbol;
             }

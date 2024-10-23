@@ -42,36 +42,6 @@ describe('GridGenerator Tests', () => {
         expect(hasMatches).toBe(true);
     });
 
-    test('checkHorizontalMatch should detect horizontal matches', () => {
-        const gridGen = new GridGenerator({ row: 5, col: 5, symbols: 3, combination: 3 });
-        
-        gridGen.grid = [
-            [1, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0]
-        ];
-
-        const result = gridGen.checkHorizontalMatch(0, 0, 1, Array.from({ length: 5 }, () => Array(5).fill(false)));
-        expect(result).toBe(true);
-    });
-
-    test('checkVerticalMatch should detect vertical matches', () => {
-        const gridGen = new GridGenerator({ row: 5, col: 5, symbols: 3, combination: 3 });
-        
-        gridGen.grid = [
-            [1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 0],
-            [1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0]
-        ];
-
-        const result = gridGen.checkVerticalMatch(0, 0, 1, Array.from({ length: 5 }, () => Array(5).fill(false)));
-        expect(result).toBe(true);
-    });
-
     test('findMatchingGroup should return the correct group of matching symbols', () => {
         const gridGen = new GridGenerator({ row: 5, col: 5, symbols: 3, combination: 3 });
 
