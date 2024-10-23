@@ -45,6 +45,8 @@ export class GameController extends Component {
 
     isBonused: Node = null;
 
+    isPortrait:boolean = false;
+
     currentScore: number = 0;
     currentMove: number = 0;
 
@@ -66,6 +68,8 @@ export class GameController extends Component {
 
             globalThis.sound = soundSource
         }
+
+        screen.on('window-resize', this.adjustComponent, this);
 
         this.currentMove = this.moves
 
@@ -173,10 +177,12 @@ export class GameController extends Component {
     }
 
     onDonateScreen() : void {
+        if(this.isPortrait) return;
         director.loadScene("DonateScene")
     }
 
     clickBonus(event: EventTouch){
+        if(this.isPortrait) return;
         if(this.isBonused) return;
 
         this.isBonused = event.currentTarget
@@ -196,6 +202,17 @@ export class GameController extends Component {
         node.parent.children.map((e: Node, i: number) => {
             if(i) e.children[4].active = false
         })
+    }
+
+    adjustComponent(width: number, height: number){
+        const cont = find('Canvas/PortraitContainer')
+        if (width < height) {
+            this.isPortrait = true
+            cont.active = true
+        } else {
+            this.isPortrait = false
+            cont.active = false
+        }
     }
 }
 

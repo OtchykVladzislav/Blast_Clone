@@ -85,6 +85,8 @@ export class GridController extends Component {
     }
 
     onTileClick(event: EventTouch){
+        if(this.gameController.isPortrait) return;
+
         const targetNode = event.target as Tile;
 
         if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'bomb'){
@@ -269,8 +271,6 @@ export class GridController extends Component {
         }
 
         const check = this.gridGenerator.checkForMatches()
-
-        console.log(check)
 
         if(!check){
             const bomb = new Bomb(this.gridGenerator.grid, this.row, this.col)
