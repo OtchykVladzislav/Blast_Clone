@@ -5,10 +5,10 @@ import { SoundManager } from './SoundManager';
 const { ccclass, property } = _decorator;
 
 enum SuperTileMode {
-    Column = 0,
-    Row = 1,
-    Bomb = 2,
-    All = 3
+    Column = 1,
+    Row = 2,
+    Bomb = 3,
+    All = 4
 }
 
 @ccclass('GameController')
@@ -27,9 +27,6 @@ export class GameController extends Component {
 
     @property(CCInteger)
     currentCoin = 9999999;
-
-    @property(CCInteger)
-    superTileCombination = 2;
 
     @property (CCInteger)
     bonusBombRadius = 1;

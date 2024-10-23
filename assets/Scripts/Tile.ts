@@ -18,11 +18,13 @@ export class Tile extends Node {
 
     defaultPos: Vec3;
 
+    superTileVersion: number;
+
     size: { visualWidth: number; visualHeight: number };
 
     sprite: SpriteFrame;
 
-    constructor({position, index, col, max_col, row, max_row, sprite}) {
+    constructor({position, index, col, max_col, row, max_row, sprite, superTileVersion}) {
         super()
 
         this.position = position
@@ -38,6 +40,8 @@ export class Tile extends Node {
         this.max_row  = max_row
 
         this.max_col = max_col
+
+        this.superTileVersion = superTileVersion
 
         this.create()
     }

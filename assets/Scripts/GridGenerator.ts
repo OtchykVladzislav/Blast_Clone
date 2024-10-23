@@ -103,7 +103,7 @@ export class GridGenerator {
             count++;
         }
 
-        if (count >= 3) {
+        if (count >= this.combination) {
             // Отмечаем посещённые ячейки
             for (let c = col; c < col + count; c++) {
                 visited[row][c] = true;
@@ -122,7 +122,7 @@ export class GridGenerator {
             count++;
         }
 
-        if (count >= 3) {
+        if (count >= this.combination) {
             // Отмечаем посещённые ячейки
             for (let r = row; r < row + count; r++) {
                 visited[r][col] = true;

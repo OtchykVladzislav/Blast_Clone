@@ -355,12 +355,11 @@
       "__expectedType__": "cc.Prefab"
     },
     "moves": 25,
-    "score": 100,
+    "score": 4500,
     "priceTile": 10,
     "currentCoin": 9999999,
-    "superTileCombination": 2,
     "bonusBombRadius": 1,
-    "superTileMode": 0,
+    "superTileMode": 1,
     "superTileBombRadius": 1,
     "_id": "8cGo0F2YhGH55+E1AFwe3g"
   },
@@ -3443,7 +3442,8 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "combination": 2,
+    "combination": 3,
+    "superTileCombination": 6,
     "tileParticles": {
       "__uuid__": "12004e93-4344-4d6b-97e6-a4c62a014e5d",
       "__expectedType__": "cc.Prefab"
@@ -3454,6 +3454,10 @@
     },
     "borderTile": {
       "__uuid__": "8589f98f-dd34-4c2e-9992-b410c6e80a0c@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "superTile": {
+      "__uuid__": "ee488e05-a76b-4d0c-bf4d-120e7dab444a@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "tiles": [

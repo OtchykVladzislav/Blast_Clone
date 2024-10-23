@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate, Node, ParticleSystem, ParticleSystem2D, Prefab, Sprite, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Color, Component, EventTouch, find, instantiate, Node, ParticleSystem, ParticleSystem2D, Prefab, sp, Sprite, SpriteFrame, tween, Vec2, Vec3 } from 'cc';
 import { Tile } from './Tile';
 import { GridGenerator } from './GridGenerator';
 import { GameController } from './GameController';
@@ -10,6 +10,9 @@ const { ccclass, property } = _decorator;
 export class GridController extends Component {
     @property (CCInteger)
     combination = 2;
+    
+    @property(CCInteger)
+    superTileCombination = 2;
 
     @property(Prefab)
     tileParticles = null
@@ -19,6 +22,9 @@ export class GridController extends Component {
 
     @property(SpriteFrame)
     borderTile: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    superTile: SpriteFrame = null;
     
     @property([SpriteFrame])
     tiles: SpriteFrame[] = []
@@ -54,7 +60,7 @@ export class GridController extends Component {
             }
         }
     }
-    createTile(elem: number, i: number, j: number){
+    createTile(elem: number, i: number, j: number, superTileVersion: number = 0){
         const tile = new Tile({
             position: new Vec3(),
             index: elem,
@@ -62,7 +68,8 @@ export class GridController extends Component {
             max_col: this.col,
             row: i,
             max_row: this.row,
-            sprite: this.tiles[elem - 1]
+            sprite: (superTileVersion? this.superTile : this.tiles[elem - 1]),
+            superTileVersion
         })
 
         tile.on(Node.EventType.TOUCH_END, this.onTileClick, this);
@@ -85,7 +92,39 @@ export class GridController extends Component {
             this.gameController.move(group.length, targetNode)
         } else if(this.gameController.isBonused && this.gameController.isBonused.name.split('-')[1] === 'swap'){
             this.teleportTile(targetNode)
-        } else this.defaultClick(targetNode)
+        } else {
+            if(targetNode.superTileVersion){
+                let group: Vec2[] = []
+                const bomb = new Bomb(this.gridGenerator.grid, this.row, this.col)
+
+                switch (targetNode.superTileVersion) {
+                    case 1:
+                        for (let row = 0; row < this.row; row++) {
+                            group.push(new Vec2(row, targetNode.col));
+                        }
+                        break;
+                    case 2:
+                        for (let col = 0; col < this.col; col++) {
+                            group.push(new Vec2(targetNode.row, col));
+                        }
+                        break;
+                    case 3:
+                        group = bomb.destroyTilesInRadius(targetNode.row, targetNode.col, this.gameController.superTileBombRadius)
+                        bomb.effectBombExplosion(targetNode, this.gameController.superTileBombRadius, this.explosionParticles)
+                        this.gameController.soundManager.explosionSound.play()
+                        break;
+                    case 4:
+                        group = bomb.destroyTilesInRadius(targetNode.row, targetNode.col, this.row)
+                        bomb.effectBombExplosion(targetNode, this.row, this.explosionParticles)
+                        this.gameController.soundManager.explosionSound.play()
+                        break;
+                }
+
+                this.removeGroup(group);
+                this.gameController.move(group.length, targetNode)
+
+            } else this.defaultClick(targetNode)
+        }
     }
 
     teleportTile(targetNode: Tile){
@@ -124,7 +163,14 @@ export class GridController extends Component {
         this.gameController.soundManager.clickSound.play()
 
         if (group.length >= this.combination) {
-            this.removeGroup(group);
+            if(group.length >= this.superTileCombination){
+                const tile = this.createTile(99, targetNode.row, targetNode.col, this.gameController.superTileMode)
+                const index = targetNode.getSiblingIndex()
+                tile.setSiblingIndex(index);
+                this.removeGroup(group, false, {row: targetNode.row, col: targetNode.col});
+            } else {
+                this.removeGroup(group);
+            }
             this.gameController.move(group.length, targetNode)
         } else {
             targetNode.animation = tween(targetNode)
@@ -140,13 +186,14 @@ export class GridController extends Component {
     }
 
     // Удаление группы символов
-    removeGroup(group: Vec2[]) {
+    removeGroup(group: Vec2[], forceSearch: boolean = true, superTile: any = null) {
         for (const pos of group) {
             const { x: row, y: col } = pos;
-            this.gridGenerator.grid[row][col] = 0; // Обнуляем ячейки (или можем поставить null/пустое значение)
+            if(superTile && superTile.row === row && superTile.col === col) this.gridGenerator.grid[row][col] = 99;
+            else this.gridGenerator.grid[row][col] = 0; // Обнуляем ячейки (или можем поставить null/пустое значение)
             
             // Удаляем спрайт визуально
-            const spriteNode = this.findTile(row, col)
+            const spriteNode = this.findTile(row, col, forceSearch)
 
             this.burnTileEffect(spriteNode)
 
@@ -168,7 +215,7 @@ export class GridController extends Component {
                 if (this.gridGenerator.grid[row][col] !== 0) {
                     // Если выше есть пустая ячейка
                     if (emptyRow !== row) {
-                        const spriteNode = this.findTile(row, col) as Tile;
+                        const spriteNode = this.findTile(row, col, true) as Tile;
                         if (spriteNode) {
                             if(spriteNode.animation){
                                 spriteNode.animation.stop()
@@ -209,12 +256,21 @@ export class GridController extends Component {
                     .start();
             }
         }
+
+        const check = this.gridGenerator.checkForMatches()
+
+        if(!check){
+            const bomb = new Bomb(this.gridGenerator.grid, this.row, this.col)
+            const group = bomb.destroyTilesInRadius(Math.floor(this.row) / 2, Math.floor(this.row) / 2, this.row)
+            this.removeGroup(group);
+        }
     }
 
-    findTile(row: number, col: number){
+    findTile(row: number, col: number, forceSearch: boolean = false){
         return this.node.children.find(e => {
             const tile = e as Tile
-            return tile.row === row && tile.col === col
+            if(!forceSearch) return tile.row === row && tile.col === col && !tile.superTileVersion
+            else return tile.row === row && tile.col === col
         })
     }
 
@@ -246,7 +302,7 @@ export class GridController extends Component {
             new Color(243, 151, 0, alpha)
         ]
 
-        return colors[index - 1]
+        return index !== 99 ? colors[index - 1] : new Color(0, 0, 0, alpha)
     }
 
 }
