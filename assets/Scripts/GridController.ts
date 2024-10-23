@@ -52,6 +52,10 @@ export class GridController extends Component {
             combination: this.combination
         })
 
+        this.createField()
+    }
+
+    createField(){
         for(let i = 0; i < this.row; i++){
             for(let j = 0; j < this.col; j++){
                 let elem = this.gridGenerator.grid[i][j]
@@ -60,6 +64,7 @@ export class GridController extends Component {
             }
         }
     }
+
     createTile(elem: number, i: number, j: number, superTileVersion: number = 0){
         const tile = new Tile({
             position: new Vec3(),
@@ -186,9 +191,10 @@ export class GridController extends Component {
     }
 
     // Удаление группы символов
-    removeGroup(group: Vec2[], forceSearch: boolean = true, superTile: any = null) {
+    removeGroup(group: Vec2[], forceSearch: boolean = true, superTile: any = null, reloadField: boolean = false) {
         for (const pos of group) {
             const { x: row, y: col } = pos;
+
             if(superTile && superTile.row === row && superTile.col === col) this.gridGenerator.grid[row][col] = 99;
             else this.gridGenerator.grid[row][col] = 0; // Обнуляем ячейки (или можем поставить null/пустое значение)
             
@@ -203,12 +209,15 @@ export class GridController extends Component {
         }
 
         // Обновляем поле (например, элементы падают вниз)
-        this.animateGridUpdate();
+        if(reloadField) {
+            this.gridGenerator.generateGridWithRandomMatches()
+            this.createField()
+        } else this.animateGridUpdate();
     }
 
     // Анимация падения элементов и обновления сетки
     animateGridUpdate() {
-        for (let col = 0; col < this.col; col++) {
+        for(let col = 0; col < this.col; col++) {
             let emptyRow = 0;
 
             for (let row = 0; row < this.row; row++) {
@@ -223,6 +232,8 @@ export class GridController extends Component {
                             }
 
                             const targetPosition = new Vec3(spriteNode.position.x, (emptyRow * (spriteNode.size.visualHeight - 10)) + spriteNode.size.visualHeight / 2, 0);
+
+                            spriteNode.defaultPos = targetPosition.clone()
 
                             spriteNode.row = emptyRow
 
@@ -259,10 +270,12 @@ export class GridController extends Component {
 
         const check = this.gridGenerator.checkForMatches()
 
+        console.log(check)
+
         if(!check){
             const bomb = new Bomb(this.gridGenerator.grid, this.row, this.col)
-            const group = bomb.destroyTilesInRadius(Math.floor(this.row) / 2, Math.floor(this.row) / 2, this.row)
-            this.removeGroup(group);
+            const group = bomb.destroyTilesInRadius(Math.floor(this.row / 2), Math.floor(this.row / 2), this.row)
+            this.removeGroup(group, true, null, true);
         }
     }
 

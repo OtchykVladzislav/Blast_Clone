@@ -39,7 +39,7 @@ export class GridGenerator {
         }
 
         // Генерируем несколько групп с случайным количеством совпадений
-        const groupsCount = Math.floor(Math.random() * 3) + 1; // Например, от 1 до 3 групп
+        const groupsCount = Math.floor(Math.random() * 5) + 1; // Например, от 1 до 3 групп
 
         for (let i = 0; i < groupsCount; i++) {
             this.createRandomMatch();
@@ -48,7 +48,7 @@ export class GridGenerator {
 
     // Создаем одну случайную группу с совпадениями
     createRandomMatch() {
-        const matchLength = Math.floor(Math.random() * this.combination) + 3; // Случайное количество символов (от this.combination до 5)
+        const matchLength = Math.floor(Math.random() * this.combination) + 4; // Случайное количество символов (от this.combination до 5)
         const matchSymbol = this.getRandomSymbol();
         
         // Случайный выбор типа совпадения: горизонтальное или вертикальное
@@ -75,62 +75,43 @@ export class GridGenerator {
 
     checkForMatches(): boolean {
         const visited = Array.from({ length: this.rows }, () => Array(this.cols).fill(false));
-
+    
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
                 if (!visited[row][col]) {
                     const symbol = this.grid[row][col];
-
-                    // Проверяем горизонтальные и вертикальные группы
-                    const horizontalMatch = this.checkHorizontalMatch(row, col, symbol, visited);
-                    const verticalMatch = this.checkVerticalMatch(row, col, symbol, visited);
-
-                    if (horizontalMatch || verticalMatch) {
-                        return true; // Если хотя бы одна группа найдена
+                    const group = this.findConnectedGroup(row, col, symbol, visited);
+    
+                    if (group.length >= this.combination || symbol === 99) {
+                        return true; // Нашли группу, которая удовлетворяет условию
                     }
                 }
             }
         }
-
-        return false; // Если не нашли ни одной группы
+    
+        return false; // Совпадений не найдено
     }
 
-    // Проверка горизонтальных совпадений
-    checkHorizontalMatch(row: number, col: number, symbol: number, visited: boolean[][]): boolean {
-        let count = 1;
+    // Метод для поиска группы связанных клеток с одинаковыми символами
+    findConnectedGroup(row: number, col: number, symbol: number, visited: boolean[][]): Vec2[] {
+        const group: Vec2[] = [];
+        
+        const dfs = (r: number, c: number) => {
+            if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return;
+            if (visited[r][c] || this.grid[r][c] !== symbol) return;
 
-        for (let c = col + 1; c < this.cols && this.grid[row][c] === symbol; c++) {
-            count++;
-        }
+            visited[r][c] = true;
+            group.push(new Vec2(r, c));
 
-        if (count >= this.combination) {
-            // Отмечаем посещённые ячейки
-            for (let c = col; c < col + count; c++) {
-                visited[row][c] = true;
-            }
-            return true; // Нашли горизонтальное совпадение
-        }
+            // Рекурсивно проверяем соседние клетки (по горизонтали, вертикали и диагоналям)
+            dfs(r + 1, c); // вниз
+            dfs(r - 1, c); // вверх
+            dfs(r, c + 1); // вправо
+            dfs(r, c - 1); // влево
+        };
 
-        return false;
-    }
-
-    // Проверка вертикальных совпадений
-    checkVerticalMatch(row: number, col: number, symbol: number, visited: boolean[][]): boolean {
-        let count = 1;
-
-        for (let r = row + 1; r < this.rows && this.grid[r][col] === symbol; r++) {
-            count++;
-        }
-
-        if (count >= this.combination) {
-            // Отмечаем посещённые ячейки
-            for (let r = row; r < row + count; r++) {
-                visited[r][col] = true;
-            }
-            return true; // Нашли вертикальное совпадение
-        }
-
-        return false;
+        dfs(row, col);
+        return group;
     }
 
     // Поиск группы совпадающих символов
@@ -153,6 +134,7 @@ export class GridGenerator {
         };
 
         dfs(row, col);
+
         return group;
     }
 
